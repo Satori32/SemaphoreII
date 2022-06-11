@@ -6,11 +6,18 @@
 #include <chrono>
 #include <random>
 
+/** /
 template<class R>
 R Semaphore(const std::function<R(void)>& F) {
 	static std::mutex M;
 	std::lock_guard<std::mutex> L(M);
 	return F();
+}/**/
+template<class R,class... Arg>
+R Semaphore(const std::function<R(Arg&...)>& F,const Arg& ...A) {// a good semaphoe.but compile.
+	static std::mutex M;
+	std::lock_guard<std::mutex> L(M);
+	return F(A...);
 }/**/
 template<class R>
 R Semaphore2(const std::function<R(void)>& F,std::mutex M) {
@@ -33,6 +40,7 @@ int main() {
 		auto F = [i]()->bool {std::cout << i << std::endl; return true; };
 	//	Semaphore<bool>(F);
 		auto FU = std::async(std::launch::async, Semaphore<bool>, F);//compiler cant solve to some of same name functions issue.
+	//	auto FU = std::async(std::launch::async, Semaphore<bool>, F,10);//compiler cant solve template argements issue.
 		//	auto FU = std::async(std::launch::async, [F]() {return Semaphore(F); });//why not...
 	//	auto FU = std::async(std::launch::async, [](auto F) {Semaphore<bool>(F); 	std::this_thread::sleep_for(std::chrono::nanoseconds(3)); return true; }, F);
 		//	auto FU = std::async(std::launch::async, [i]() {std::cout << i << std::endl; });//why not...
